@@ -27,10 +27,9 @@ extern int random_drop;
 
 extern int ifindex;
 
-extern char g_packet_buf[buf_len];
+extern char g_packet_buf[huge_buf_len];
 extern int g_packet_buf_len;
 extern int g_packet_buf_cnt;
-
 
 struct my_iphdr
   {

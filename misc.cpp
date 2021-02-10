@@ -144,6 +144,8 @@ void print_help()
 	printf("    -g,--gen-rule                         generate iptables rule then exit,so that you can copy and\n");
 	printf("                                          add it manually.overrides -a\n");
 	printf("    --disable-anti-replay                 disable anti-replay,not suggested\n");
+	printf("    --fix-gro                             try to fix huge packet caused by GRO. this option is at an early stage.\n");
+	printf("                                          make sure client and server are at same version.\n");
 
 	//printf("\n");
 	printf("client options:\n");
@@ -186,7 +188,6 @@ void print_help()
 	printf("    --clear                               clear any iptables rules added by this program.overrides everything\n");
 	printf("    --retry-on-error                      retry on error, allow to start udp2raw before network is initialized\n");
 	printf("    -h,--help                             print this help message\n");
-
 	//printf("common options,these options must be same on both side\n");
 }
 
@@ -298,6 +299,7 @@ void process_arg(int argc, char *argv[])  //process all options
 		{"dev", required_argument,    0, 1},
 		{"dns-resolve", no_argument,    0, 1},
 		{"easy-tcp", no_argument,    0, 1},
+        {"fix-gro", no_argument,    0, 1},
 		{NULL, 0, 0, 0}
 	  };
 
@@ -561,9 +563,16 @@ void process_arg(int argc, char *argv[])  //process all options
 			}
 			else if(strcmp(long_options[option_index].name,"cipher-mode")==0)
 			{
+				string s=optarg;
+				if(s=="aes128cfb_0")
+				{
+					s="aes128cfb";
+					aes128cfb_old=1;
+					mylog(log_warn,"aes128cfb_0 is used\n");
+				}
 				for(i=0;i<cipher_end;i++)
 				{
-					if(strcmp(optarg,cipher_mode_tostring[i])==0)
+					if(strcmp(s.c_str(),cipher_mode_tostring[i])==0)
 					{
 						cipher_mode=(cipher_mode_t)i;
 						break;
@@ -738,6 +747,11 @@ void process_arg(int argc, char *argv[])  //process all options
 				use_tcp_dummy_socket=1;
 				mylog(log_info,"--easy-tcp enabled, now a dummy tcp socket will be created for handshake and block rst\n");
 			}
+            else if(strcmp(long_options[option_index].name,"fix-gro")==0)
+            {
+                mylog(log_info,"--fix-gro enabled\n");
+                g_fix_gro=1;
+            }
 			else
 			{
 				mylog(log_warn,"ignored unknown long option ,option_index:%d code:<%x>\n",option_index, optopt);

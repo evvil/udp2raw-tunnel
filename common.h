@@ -159,6 +159,8 @@ const int max_addr_len=100;
 
 extern int force_socket_buf;
 
+extern int g_fix_gro;
+
 /*
 struct ip_port_t
 {
@@ -345,6 +347,8 @@ struct not_copy_able_t
 	}
 };
 
+const int huge_data_len=65535+100; //a packet with link level header might be larger than 65535
+const int huge_buf_len=huge_data_len+100;
 
 const int max_data_len=1800;
 const int buf_len=max_data_len+400;
